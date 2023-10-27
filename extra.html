@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Compra ahora</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div id="toast" class="mt-4 toast position-fixed top-0 start-50 translate-middle-x" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+        <div class="toast-header">
+            <strong class="me-auto">🔴 Quinielas Alonzo</strong>
+            <small class="hourClientQuiniela"></small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+        </div>
+        <div class="toast-body">
+            <span class="userClientQuiniela fw-bold"></span> ha comprado <span class="numberClientQuiniela fw-bold"></span> Quinielas 🥴
+        </div>
+    </div>
+
+    <h2>Último Dato:</h2>
+    <pre id="last-data"></pre>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script>
+        function showLastData(data) {
+            userClientQuiniela = data.nombre;
+            numberClientQuiniela = data.numero;
+
+            if (userClientQuiniela === undefined) {
+
+            } else {
+                localStorage.setItem("lastData", JSON.stringify(data));
+                $('.toast').toast('show');
+                console.log(numberClientQuiniela);
+                const now = new Date();
+                const fechaDato = new Date(data.fecha);
+                const diffInSeconds = Math.floor((now - fechaDato) / 1000);
+
+                function formatTimeDifference(seconds) {
+                    if (seconds < 60) {
+                        return `hace ${seconds} segundos`;
+
+                    } else if (seconds < 3600) {
+                        const minutes = Math.floor(seconds / 60);
+                        return `hace ${minutes} minutos`;
+
+                    } else if (seconds < 86400) {
+                        const hours = Math.floor(seconds / 3600);
+                        return `hace ${hours} horas`;
+
+                    } else {
+                        const days = Math.floor(seconds / 86400);
+                        return `hace ${days} días`;
+
+                    }
+                }
+
+                const hourClientQuinielaElements = document.getElementsByClassName("hourClientQuiniela");
+                for (const element of hourClientQuinielaElements) {
+                    element.textContent = formatTimeDifference(diffInSeconds);
+                    console.log(formatTimeDifference(diffInSeconds));
+                }
+
+                localStorage.setItem("userClientQuiniela", userClientQuiniela);
+                localStorage.setItem("numberClientQuiniela", numberClientQuiniela);
+
+                const userClientQuinielaElements = document.getElementsByClassName("userClientQuiniela");
+                const numberClientQuinielaElements = document.getElementsByClassName("numberClientQuiniela");
+
+                for (const element of userClientQuinielaElements) {
+                    element.textContent = userClientQuiniela;
+
+                }
+
+                for (const element of numberClientQuinielaElements) {
+                    element.textContent = numberClientQuiniela;
+
+                }
+            }
+        }
+        const eventSource = new EventSource("noti_stream.php");
+
+        // Eventos SSE
+        eventSource.addEventListener("message", function(event) {
+            const data = JSON.parse(event.data);
+            const lastData = JSON.parse(localStorage.getItem("lastData"));
+            if (!lastData || JSON.stringify(data) !== JSON.stringify(lastData)) {
+                showLastData(data);
+
+            }
+        });
+    </script>
+</body>
+
+</html>
